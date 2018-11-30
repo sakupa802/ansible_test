@@ -1,0 +1,75 @@
+- hosts: node    #対象ホストを指定する。
+  become: yes
+  tasks:         #実行するtaskを指定する。
+    - name: 'yum update'
+      yum:
+        name: '*'
+        state: latest
+    - name: Install NGINX.
+      yum: name=nginx
+    - command: systemctl enable nginx
+    - command: systemctl start nginx
+
+    # - name: Install the MySQL repository.
+    #   yum:
+    #     name: http://repo.mysql.com/mysql80-community-release-el7-1.noarch.rpm
+    #     state: present
+    #   when: ansible_os_family == "RedHat"
+    # - name: Override variables for MySQL.
+    #   set_fact:
+    #     mysql_daemon: mysqld
+    #     mysql_packages: ['mysql-server']
+    #     mysql_log_error: /var/log/mysqld.err
+    #     mysql_syslog_tag: mysqld
+    #     mysql_pid_file: /var/run/mysqld/mysqld.pid
+    #   when: ansible_os_family == "RedHat"
+    # # - command: systemctl enable mysqld
+    # # - command: systemctl start mysqld
+
+    # - name: Install git
+    #   yum: name={{ item }} state=present
+    #   with_items:
+    #    - git
+
+    # - name: git clone rbenv
+    #   shell: git clone https://github.com/rbenv/rbenv.git ~/.rbenv
+
+    - name: rbenv path1/2
+      shell: echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bash_profile
+
+    - name: rbenv path2/2
+      shell: echo 'eval "$(rbenv init -)"' >> ~/.bash_profile
+
+    - name: bash reload
+      shell: source ~/.bash_profile
+
+    - name: nginx location config file directory
+      file: path=/root/.rbenv/plugins/ state=directory owner=root group=root mode=0755
+
+    - name: git clone ruby-build
+      shell: git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build
+
+    - name: install ruby-build
+      shell: /root/.rbenv/plugins/ruby-build/install.sh
+
+    - name: Install package
+      yum: name={{ item }} state=present
+      with_items:
+       - openssl-devel
+       - readline-devel
+       - zlib-devel
+       - bzip2
+       - gcc
+       - mysql-devel
+
+    - name: Install ruby
+      shell: bash -lc "rbenv install 2.5.1"
+
+    - name: ruby path
+      shell: echo 'eval "$(rbenv init -)"' >> ~/.bash_profile
+
+    - name: bash reload
+      shell: source ~/.bash_profile
+
+    - name: rbenv default ruby
+      shell: bash -lc "rbenv global 2.5.1"
